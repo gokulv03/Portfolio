@@ -8,7 +8,7 @@ gsap.registerPlugin(ScrollTrigger)
 const ITEMS = [
   {
     id: '01',
-    period: 'Current · Expected Apr 2026',
+    period: 'Current · Expected May 2027',
     degree: 'M.Sc. Electrical and Information Technology',
     school: 'Deggendorf Institute of Technology',
     location: 'Germany',

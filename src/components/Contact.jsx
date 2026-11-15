@@ -96,7 +96,8 @@ export default function Contact() {
         </SplitHeading>
 
         <p className="contact-lede">
-          Open to embedded &amp; firmware roles and collaborations. The quickest
+          Currently writing my master&rsquo;s thesis on buck converter layout and
+          EMI. Open to working student roles and collaborations. The quickest
           way to reach me is a direct line.
         </p>
 
