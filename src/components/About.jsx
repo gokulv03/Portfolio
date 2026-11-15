@@ -19,13 +19,13 @@ const SKILLS = [
 // [text, emphasised] runs; each word becomes a span so the copy can light up with scroll
 const INTRO = [
   [
-    ['Electrical Engineering student', true],
-    [' specialising in embedded firmware and hardware-software integration. I write register-level C for STM32 microcontrollers, design PLC control logic for industrial automation, and build Python simulation pipelines.', false],
+    ['Electrical engineering master’s student', true],
+    [' at ', false],
+    ['Deggendorf Institute of Technology', true],
+    [', now writing my thesis in power electronics.', false],
   ],
   [
-    ['My work spans safety-critical academic research, including an electromagnetic rail launcher and a V2V visible-light communication system, plus independent simulation work bridging physical plant models with software. Currently pursuing an M.Sc. at ', false],
-    ['Deggendorf Institute of Technology', true],
-    [', deepening expertise in real-time OS, DSP, and power electronics.', false],
+    ['I like working where hardware and software meet. I started in embedded systems, writing register-level C for STM32 microcontrollers, then added PLC control logic for industrial automation and simulation work in Python. The thesis is taking me further toward the hardware side: circuit simulation, PCB layout and EMI.', false],
   ],
 ]
 
