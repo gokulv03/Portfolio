@@ -284,6 +284,8 @@ html.has-world .proj-view-frame {
   transition: opacity 0.2s, transform 0.2s;
 }
 .navrail-btn:hover .navrail-tip { opacity: 1; transform: translateY(-50%) translateX(0); }
+/* a hairline sets the Personal entry apart: it leaves the page, the others scroll it */
+.navrail-sep { width: 16px; height: 1px; background: var(--line-2); margin: 0.15rem 0; }
 
 @media (max-width: 720px) {
   .navrail {
@@ -300,6 +302,7 @@ html.has-world .proj-view-frame {
   /* no rail gutter on phones, so the mark scrolls away instead of floating over copy */
   .brand { position: absolute; }
   .navrail-inner { flex-direction: row; gap: 0.3rem; }
+  .navrail-sep { width: 1px; height: 18px; margin: 0 0.1rem; }
   .navrail-btn { width: 44px; height: 44px; }
   .navrail-tip { display: none; }
 }
@@ -1112,6 +1115,158 @@ html.is-booting { overflow: hidden; }
     padding: 4.5rem 0 2rem;
   }
   .proj-stage.has-view { grid-template-columns: minmax(0, 1fr) clamp(320px, 32vw, 440px); }
+}
+
+/* ── Page change: a short fade through black between the two pages ── */
+.veil {
+  position: fixed;
+  inset: 0;
+  z-index: 8000;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.26s ease;
+}
+.veil.is-on { opacity: 1; }
+
+/* ── Personal page (/personal). The work page is amber on a circuit board;
+      this one is blue on black, with a network of light behind the text
+      (Mind.jsx). The accent tokens are swapped on <html>, so the rail, the
+      brand mark and the progress line turn blue with it. ── */
+html.is-personal {
+  --bg:      #000000;
+  --bg-2:    #05070b;
+  --sig:     #3f8cff;
+  --sig-br:  #9cc4ff;
+  --sig-dim: rgba(63, 140, 255, 0.15);
+}
+html.is-personal body { background: #000; }
+
+.mind {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100lvh;
+  max-width: none;
+  z-index: 0;
+  pointer-events: none;
+}
+.personal {
+  position: relative;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 clamp(1.25rem, 5vw, 3rem);
+}
+.personal > :not(.mind) { position: relative; z-index: 1; }
+
+.pj-head {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 1.3rem;
+  max-width: 34rem;
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.9s ease 0.15s, transform 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.15s;
+}
+.personal.is-ready .pj-head { opacity: 1; transform: none; }
+.pj-eyebrow {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--sig);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+.pj-eyebrow::before { content: ''; width: 26px; height: 1px; background: var(--sig); }
+.pj-title {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: clamp(2.6rem, 6.4vw, 4.6rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--t1);
+}
+.pj-lede { font-size: clamp(1rem, 1.5vw, 1.12rem); color: var(--t2); max-width: 36ch; }
+.pj-hint {
+  margin-top: 1.4rem;
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--t3);
+}
+
+.pj-list { list-style: none; }
+/* one moment at a time: the one crossing the middle of the screen is in focus */
+.pj-moment {
+  position: relative;
+  min-height: 74vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.9rem;
+  max-width: 31rem;
+  opacity: 0.22;
+  transform: translateY(10px);
+  transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.pj-moment.is-active { opacity: 1; transform: none; }
+.pj-tag {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--sig);
+}
+.pj-moment-title {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(1.7rem, 3.6vw, 2.6rem);
+  line-height: 1.06;
+  letter-spacing: -0.02em;
+  color: var(--t1);
+}
+.pj-moment-text { font-size: clamp(1rem, 1.6vw, 1.14rem); line-height: 1.7; color: rgba(228, 236, 238, 0.78); }
+
+.pj-end {
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 1.6rem;
+  padding-bottom: 6rem;
+}
+.pj-end-line {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  letter-spacing: -0.02em;
+  color: var(--t1);
+}
+
+@media (max-width: 880px) {
+  /* the network sits behind the copy here, so give the words a pool of black */
+  .pj-moment, .pj-head, .pj-end { max-width: none; }
+  .pj-moment::before {
+    content: '';
+    position: absolute;
+    inset: 18% -1rem;
+    z-index: -1;
+    background: radial-gradient(closest-side, rgba(0, 0, 0, 0.8), transparent);
+    pointer-events: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .veil, .pj-head, .pj-moment { transition: none; }
+  .pj-head, .pj-moment { transform: none; }
 }
 
 /* ── Responsive ── */
