@@ -98,7 +98,7 @@ export default function Hero({ ready }) {
       <div className="hero-inner">
         <div className="hero-content" ref={contentRef}>
           <motion.span className="hero-eyebrow" {...fade(0.1)}>
-            <Decode text="Embedded systems engineer" active={ready} />
+            <Decode text="Electrical engineer" active={ready} />
           </motion.span>
 
           <h1 className="hero-title" aria-label={NAME.join(' ')}>
@@ -113,8 +113,9 @@ export default function Hero({ ready }) {
           </h1>
 
           <motion.p className="hero-lede" {...fade(0.55)}>
-            Register-level firmware for STM32, PLC control logic, and the
-            signal processing that ties hardware to software.
+            Master&rsquo;s student working on buck converter layout and EMI,
+            with a background in STM32 firmware, PLC control logic and signal
+            processing.
           </motion.p>
 
           <motion.div className="hero-actions" {...fade(0.72)}>

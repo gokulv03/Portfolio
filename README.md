@@ -1,6 +1,6 @@
 # Portfolio
 
-Personal portfolio of Gokul Vemulapalli, embedded systems engineer.
+Personal portfolio of Gokul Vemulapalli, electrical engineer.
 
 A single-page site built with Vite and React. A procedural circuit board,
 drawn as line art with three.js, sits behind the page, and scrolling flies a

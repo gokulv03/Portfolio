@@ -141,7 +141,8 @@ export default function SignalScope() {
     let last = start
     const frame = (now) => {
       raf = requestAnimationFrame(frame)
-      if (checks++ % 12 === 0) {
+      // re-check every frame while hidden, so it comes back the moment it can
+      if (!shown || checks++ % 12 === 0) {
         shown = canvas.checkVisibility
           ? canvas.checkVisibility({ visibilityProperty: true, opacityProperty: true })
           : true
