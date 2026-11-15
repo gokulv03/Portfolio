@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Gokul Vemulapalli — Embedded Systems Engineer</title>
+  <meta name="description" content="M.Sc. EE candidate at DIT Germany · Embedded firmware, PLC/SCADA, hardware-software integration · Open to Working Student & Thesis roles"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;1,300&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/ScrollToPlugin.min.js"></script>
+  <style>
+/* ── Tokens ── */
+:root{
+  --bg:#07070a;
+  --b:rgba(255,255,255,0.08);
+  --b-h:rgba(255,255,255,0.15);
+  --t1:rgba(255,255,255,0.93);
+  --t2:rgba(255,255,255,0.48);
+  --t3:rgba(255,255,255,0.22);
+  --t4:rgba(255,255,255,0.10);
+  --acc:rgba(196,162,82,0.90);
+  --acc-d:rgba(196,162,82,0.32);
+  --acc-g:rgba(196,162,82,0.06);
+  /* glass */
+  --gl-bg:rgba(255,255,255,0.032);
+  --gl-bg-h:rgba(255,255,255,0.055);
+  --gl-blur:blur(20px) saturate(160%);
+  --mono:'JetBrains Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{overflow-x:hidden}
+body{
+  background:var(--bg);color:var(--t1);
+  font-family:'Inter',sans-serif;font-weight:400;line-height:1.65;
+  overflow-x:hidden;-webkit-font-smoothing:antialiased;cursor:none;
+}
+a,button{cursor:none}
+
+/* ── Glass utility ── */
+.glass{
+  background:var(--gl-bg);
+  backdrop-filter:var(--gl-blur);
+  -webkit-backdrop-filter:var(--gl-blur);
+  border:1px solid var(--b);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.10),
+             inset 0 -1px 0 rgba(255,255,255,0.03),
+             0 8px 32px rgba(0,0,0,0.28);
+}
+.glass:hover{background:var(--gl-bg-h);border-color:var(--b-h)}
+/* Gradient border overlay — iridescent glass edge */
+.glass-edge{position:relative}
+.glass-edge::after{
+  content:'';position:absolute;inset:0;border-radius:inherit;
+  padding:1px;
+  background:linear-gradient(135deg,
+    rgba(255,255,255,0.18) 0%,
+    rgba(255,255,255,0.05) 40%,
+    rgba(255,255,255,0.10) 100%);
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;
+  pointer-events:none;
+}
+
+/* ── Canvas ── */
+#bg{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+
+/* ── Grain ── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:1;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity:0.38;
+}
+
+/* ── Cursor ── */
+#cd,#cr{position:fixed;border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);will-change:transform}
+#cd{width:5px;height:5px;background:var(--t1);transition:width .2s,height .2s,background .2s}
+#cr{width:28px;height:28px;border:1px solid rgba(255,255,255,0.22);transition:width .4s cubic-bezier(.16,1,.3,1),height .4s cubic-bezier(.16,1,.3,1),border-color .3s,opacity .25s}
+body.cl #cd{width:34px;height:34px;background:var(--acc-g);border:1px solid var(--acc-d)}
+body.cl #cr{width:0;height:0;opacity:0}
+body.ch #cd{width:7px;height:7px;background:var(--acc)}
+body.ch #cr{width:44px;height:44px;border-color:var(--acc-d)}
+
+/* ── Loader ── */
+#loader{position:fixed;inset:0;z-index:2000;background:var(--bg);display:flex;flex-direction:column;overflow:hidden}
+#loader-bg{position:absolute;inset:0;width:100%;height:100%;z-index:0}
+.lbar{position:absolute;bottom:0;left:0;height:1px;width:0;background:var(--acc);z-index:2}
+.llabel{position:absolute;bottom:3rem;left:3rem;font-family:var(--mono);font-size:.6rem;letter-spacing:.28em;color:var(--t3);text-transform:uppercase;z-index:2}
+.lctr{position:absolute;bottom:3rem;right:3rem;font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;color:var(--t3);z-index:2}
+.lchars{position:absolute;top:50%;left:3rem;transform:translateY(-50%);display:flex;overflow:hidden;z-index:2}
+.lch{font-size:clamp(2rem,6vw,5rem);font-weight:300;letter-spacing:-.02em;color:rgba(255,255,255,0.07);transform:translateY(100%);display:inline-block}
+.lch.sp{width:.38em}
+
+/* ── Brand & Status ── */
+.brand{
+  position:fixed;top:1.6rem;left:2.5rem;z-index:200;
+  font-family:var(--mono);font-size:.68rem;letter-spacing:.16em;
+  color:var(--t3);text-decoration:none;text-transform:uppercase;
+  transition:color .3s;opacity:0;
+}
+.brand:hover{color:var(--t1)}
+.status-pill{
+  position:fixed;top:1.3rem;right:2.5rem;z-index:200;
+  display:flex;align-items:center;gap:.5rem;
+  font-family:var(--mono);font-size:.58rem;letter-spacing:.12em;color:var(--t3);
+  text-transform:uppercase;
+  background:rgba(255,255,255,0.03);
+  backdrop-filter:blur(20px) saturate(160%);
+  -webkit-backdrop-filter:blur(20px) saturate(160%);
+  border:1px solid rgba(255,255,255,0.07);
+  padding:.4rem 1rem;border-radius:100px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.07),0 4px 20px rgba(0,0,0,0.3);
+  opacity:0;
+}
+.sdot{width:5px;height:5px;border-radius:50%;background:rgba(110,210,130,.75);box-shadow:0 0 6px rgba(110,210,130,.4);animation:blk 2.8s ease-in-out infinite;flex-shrink:0}
+@keyframes blk{0%,100%{opacity:.7}50%{opacity:1}}
+
+/* ── Floating Dock ── */
+#dock{
+  position:fixed;bottom:2.2rem;left:50%;transform:translateX(-50%);
+  z-index:200;
+  display:flex;align-items:center;gap:.3rem;
+  padding:.5rem .55rem;
+  background:rgba(14,14,18,0.55);
+  backdrop-filter:blur(32px) saturate(200%);
+  -webkit-backdrop-filter:blur(32px) saturate(200%);
+  border:1px solid rgba(255,255,255,0.11);
+  border-radius:100px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.14),
+    inset 0 -1px 0 rgba(255,255,255,0.03),
+    0 12px 48px rgba(0,0,0,0.55),
+    0 2px 8px rgba(0,0,0,0.35),
+    0 0 0 1px rgba(0,0,0,0.4);
+  opacity:0;
+  white-space:nowrap;
+  transition:box-shadow .4s;
+}
+#dock:hover{
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.18),
+    inset 0 -1px 0 rgba(255,255,255,0.04),
+    0 16px 56px rgba(0,0,0,0.6),
+    0 4px 16px rgba(0,0,0,0.4),
+    0 0 0 1px rgba(0,0,0,0.45),
+    0 0 40px rgba(196,162,82,0.04);
+}
+.di{
+  position:relative;
+  font-family:var(--mono);font-size:.61rem;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--t3);text-decoration:none;
+  padding:.55rem 1.25rem;border-radius:100px;
+  display:flex;align-items:center;justify-content:center;
+  transform-origin:bottom center;
+  transition:
+    color .25s,
+    background .25s,
+    border-color .25s,
+    transform .4s cubic-bezier(.34,1.56,.64,1),
+    box-shadow .3s;
+  border:1px solid transparent;
+}
+.di:hover{
+  color:var(--t1);
+  background:rgba(255,255,255,0.07);
+  border-color:rgba(255,255,255,0.10);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.14),0 4px 16px rgba(0,0,0,0.3);
+  transform:scale(1.13) translateY(-4px);
+}
+.di.active{
+  color:var(--t1);
+  background:rgba(255,255,255,0.055);
+  border-color:rgba(255,255,255,0.09);
+}
+.di.active::after{
+  content:'';
+  position:absolute;bottom:.3rem;left:50%;transform:translateX(-50%);
+  width:4px;height:4px;border-radius:50%;
+  background:var(--acc);
+  box-shadow:0 0 8px rgba(196,162,82,0.7),0 0 3px rgba(196,162,82,0.5);
+}
+
+/* Dock tooltip */
+.di::before{
+  content:attr(data-tip);
+  position:absolute;bottom:calc(100% + .75rem);left:50%;
+  transform:translateX(-50%) translateY(6px);
+  font-family:var(--mono);font-size:.55rem;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--t2);
+  background:rgba(7,7,10,0.88);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,0.09);
+  padding:.3rem .7rem;border-radius:5px;
+  white-space:nowrap;
+  opacity:0;pointer-events:none;
+  transition:opacity .2s,transform .2s;
+  box-shadow:0 4px 16px rgba(0,0,0,0.4);
+}
+.di:hover::before{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Dock separator */
+.dock-sep{
+  width:1px;height:16px;
+  background:linear-gradient(to bottom,transparent,rgba(255,255,255,0.09),transparent);
+  margin:0 .15rem;flex-shrink:0;
+}
+
+/* ── Smooth-scroll wrapper ── */
+#sc{position:relative;will-change:transform;transform-origin:top center}
+
+/* ── Layout ── */
+.sec{max-width:1120px;margin:0 auto;padding:7rem 3rem}
+.eyebrow{display:flex;align-items:center;gap:1rem;margin-bottom:3rem;overflow:hidden}
+.ei{font-family:var(--mono);font-size:.6rem;letter-spacing:.2em;color:var(--acc-d);transform:translateY(100%)}
+.er{height:1px;width:28px;background:var(--b-h);transform:scaleX(0);transform-origin:left}
+.el{font-family:var(--mono);font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--t3);transform:translateY(100%)}
+.sh{font-size:clamp(2.2rem,5vw,4rem);font-weight:300;letter-spacing:-.025em;line-height:1.1;color:var(--t1);margin-bottom:4rem;overflow:hidden}
+.sh span{display:block;transform:translateY(105%)}
+
+/* ── Hero ── */
+#hero{min-height:100vh;display:flex;flex-direction:column;justify-content:flex-end;padding:0 3rem 5rem;max-width:1120px;margin:0 auto;position:relative}
+.htop{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:1.2rem;overflow:hidden}
+.htop span{font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;color:var(--t3);transform:translateY(110%);display:block}
+.hname-block{line-height:.94;margin-bottom:2.5rem}
+.hl{overflow:hidden;display:block}
+.hn{font-size:clamp(4.5rem,13vw,11rem);font-weight:300;letter-spacing:-.04em;color:var(--t1);display:block;transform:translateY(105%);will-change:transform}
+.hni{font-size:clamp(4.5rem,13vw,11rem);font-weight:300;letter-spacing:-.04em;color:var(--t2);font-style:italic;display:block;transform:translateY(105%);will-change:transform}
+.hbot{
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:2rem;align-items:end;
+  padding:1.6rem 2rem;border-radius:12px;opacity:0;
+}
+.hdesc{font-size:.87rem;color:var(--t2);line-height:1.8;max-width:300px}
+.hscr{display:flex;align-items:center;gap:.8rem;justify-content:center}
+.str{width:1px;height:44px;background:var(--b);position:relative;overflow:hidden}
+.str::after{content:'';position:absolute;left:0;top:-50%;width:1px;height:50%;background:var(--t2);animation:fall 2.2s ease-in-out infinite}
+@keyframes fall{0%{top:-50%}100%{top:150%}}
+.slbl{font-family:var(--mono);font-size:.58rem;letter-spacing:.2em;color:var(--t3);text-transform:uppercase;writing-mode:vertical-rl}
+.hlinks{display:flex;gap:1rem;justify-content:flex-end}
+.btn{font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);text-decoration:none;padding:.55rem 1.2rem;border-radius:4px;transition:color .3s,border-color .3s,background .3s;white-space:nowrap}
+.btn-glass{border:1px solid var(--b);background:var(--gl-bg);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:inset 0 1px 0 rgba(255,255,255,0.08)}
+.btn-glass:hover{color:var(--t1);border-color:var(--b-h);background:var(--gl-bg-h)}
+.btn-acc{border:1px solid var(--acc-d);background:var(--acc-g);color:var(--acc)}
+.btn-acc:hover{background:rgba(196,162,82,0.10);border-color:rgba(196,162,82,0.5);color:rgba(196,162,82,1)}
+.hscan{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--acc-d),transparent);opacity:0;pointer-events:none;z-index:3}
+
+/* ── About ── */
+.ag{display:grid;grid-template-columns:1fr 1.1fr;gap:6rem;align-items:start}
+.at p{font-size:.95rem;color:var(--t2);line-height:1.9}
+.at p+p{margin-top:1.2rem}
+.at strong{color:var(--t1);font-weight:500}
+.sg{display:grid;grid-template-columns:1fr 1fr;border-radius:10px;overflow:hidden;margin-top:2.5rem;border:1px solid var(--b)}
+.sc2{padding:1.4rem 1.6rem;border-right:1px solid var(--b);border-bottom:1px solid var(--b);background:var(--gl-bg);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.sc2:nth-child(2n){border-right:none}
+.sc2:nth-last-child(-n+2){border-bottom:none}
+.sn{font-size:2.1rem;font-weight:300;letter-spacing:-.04em;line-height:1}
+.sl{font-family:var(--mono);font-size:.6rem;letter-spacing:.14em;color:var(--t3);text-transform:uppercase;margin-top:.35rem}
+.ec{padding:1.6rem 1.8rem;border-radius:8px;margin-bottom:.8rem;transition:background .3s,border-color .3s}
+.ey{font-family:var(--mono);font-size:.6rem;letter-spacing:.14em;color:var(--t3);text-transform:uppercase;margin-bottom:.45rem}
+.ed{font-size:.97rem;font-weight:500;letter-spacing:-.01em}
+.es{font-size:.84rem;color:var(--t2);margin-top:.2rem}
+.ef{font-size:.77rem;color:var(--t3);margin-top:.5rem;font-style:italic}
+
+/* ── Project list ── */
+.phdr{display:grid;grid-template-columns:3rem 1fr auto 2.5rem;gap:2rem;padding:.5rem 0 .8rem;border-bottom:1px solid var(--b-h)}
+.phc{font-family:var(--mono);font-size:.58rem;letter-spacing:.18em;color:var(--t3);text-transform:uppercase}
+.pr{
+  position:relative;display:grid;grid-template-columns:3rem 1fr auto 2.5rem;gap:2rem;
+  align-items:center;padding:2rem 0.8rem;border-bottom:1px solid var(--b);
+  text-decoration:none;color:inherit;overflow:hidden;border-radius:0;
+  transition:background .3s,border-radius .3s,padding .3s;
+}
+.pr:hover{background:var(--gl-bg);backdrop-filter:var(--gl-blur);-webkit-backdrop-filter:var(--gl-blur);border-radius:8px;padding:2rem 1.2rem;box-shadow:inset 0 1px 0 rgba(255,255,255,0.08)}
+.pfill{position:absolute;inset:0;background:var(--acc-g);transform:scaleX(0);transform-origin:left;transition:transform .55s cubic-bezier(.16,1,.3,1)}
+.pr:hover .pfill{transform:scaleX(1)}
+.pr::after{content:'';position:absolute;bottom:0;left:0;width:0;height:1px;background:var(--acc);transition:width .7s cubic-bezier(.16,1,.3,1)}
+.pr:hover::after{width:100%}
+.pi{font-family:var(--mono);font-size:.62rem;letter-spacing:.12em;color:var(--t3);position:relative;z-index:1;transition:color .3s}
+.pr:hover .pi{color:var(--acc-d)}
+.pb{position:relative;z-index:1}
+.pn{font-size:clamp(1rem,2.1vw,1.45rem);font-weight:400;letter-spacing:-.015em;margin-bottom:.35rem;transition:color .3s}
+.pd{font-size:.8rem;color:var(--t3);line-height:1.55;max-width:500px}
+.ptgs{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.6rem}
+.ptg{font-family:var(--mono);font-size:.58rem;letter-spacing:.06em;padding:.17rem .52rem;border-radius:2px;background:rgba(255,255,255,0.035);border:1px solid rgba(255,255,255,0.07);color:var(--t3)}
+.pm{text-align:right;position:relative;z-index:1}
+.pt{font-family:var(--mono);font-size:.58rem;letter-spacing:.12em;color:var(--t3);text-transform:uppercase}
+.py{font-family:var(--mono);font-size:.58rem;color:var(--t4);letter-spacing:.1em;margin-top:.2rem}
+.pa{width:28px;height:28px;border:1px solid var(--b);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--t3);font-size:.72rem;transition:border-color .3s,color .3s,background .3s,transform .35s;flex-shrink:0;position:relative;z-index:1}
+.pr:hover .pa{border-color:var(--acc-d);color:var(--acc);background:var(--acc-g);transform:rotate(45deg)}
+.pnl{cursor:default}.pnl .pa{border-color:transparent!important}
+
+/* ── Skills ── */
+.skg{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:1px;border-radius:12px;overflow:hidden;border:1px solid var(--b)}
+.sgg{padding:1.8rem;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);background:var(--gl-bg);transition:background .3s}
+.sgg:hover{background:var(--gl-bg-h)}
+.sgl{font-family:var(--mono);font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--acc-d);margin-bottom:.9rem}
+.sgt-wrap{display:flex;flex-wrap:wrap;gap:.38rem}
+.sgt{font-size:.79rem;padding:.27rem .72rem;border-radius:3px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);color:var(--t2);transition:background .25s,border-color .25s,color .25s}
+.sgt:hover{background:var(--acc-g);border-color:var(--acc-d);color:var(--t1)}
+
+/* ── Personal ── */
+.pg{display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:start}
+.pb2 p{font-size:.95rem;color:var(--t2);line-height:1.9}
+.pb2 p+p{margin-top:1.2rem}
+.pb2 strong{color:var(--t1);font-weight:500}
+.il{display:flex;flex-direction:column}
+.ir{display:grid;grid-template-columns:1.5rem 1fr;gap:1rem;padding:1.35rem 1.2rem;border-bottom:1px solid var(--b);align-items:start;border-radius:0;transition:background .3s,border-radius .25s,padding .25s}
+.ir:first-child{border-top:1px solid var(--b)}
+.ir:hover{background:var(--gl-bg);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:8px;padding:1.35rem 1.2rem;box-shadow:inset 0 1px 0 rgba(255,255,255,0.08)}
+.ric{font-family:var(--mono);font-size:.68rem;color:var(--acc-d);padding-top:.1rem}
+.rit{font-size:.88rem;font-weight:500;margin-bottom:.22rem}
+.rib{font-size:.78rem;color:var(--t3);line-height:1.6}
+
+/* ── Contact ── */
+#contact{text-align:center;padding-bottom:8rem}
+.cbig{font-size:clamp(1rem,3vw,1.75rem);font-weight:300;letter-spacing:-.01em;color:var(--t2);text-decoration:none;border-bottom:1px solid var(--b);padding-bottom:.3rem;transition:color .3s,border-color .3s}
+.cbig:hover{color:var(--t1);border-color:var(--b-h)}
+.cnote{font-family:var(--mono);font-size:.62rem;letter-spacing:.12em;color:var(--t3);text-transform:uppercase;max-width:380px;margin:1.5rem auto 2.5rem;line-height:1.8}
+.crow{display:flex;justify-content:center;gap:1.1rem;flex-wrap:wrap;margin-top:2.5rem}
+
+/* ── Footer ── */
+footer{border-top:1px solid var(--b);padding:1.8rem 3rem;display:flex;justify-content:space-between;align-items:center;background:rgba(7,7,10,0.5);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+footer p{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;color:var(--t3)}
+.btt{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;color:var(--t3);text-decoration:none;border:1px solid var(--b);padding:.4rem .9rem;border-radius:3px;transition:color .3s,border-color .3s}
+.btt:hover{color:var(--t1);border-color:var(--b-h)}
+
+/* ── Responsive ── */
+@media(max-width:900px){
+  .brand{top:1.2rem;left:1.5rem}
+  .status-pill{display:none}
+  #dock{bottom:1.5rem;gap:.15rem}
+  .di{padding:.5rem .9rem;font-size:.57rem}
+  .sec,#hero{padding-left:1.5rem;padding-right:1.5rem}
+  .hbot{grid-template-columns:1fr;gap:1.5rem}
+  .hlinks{justify-content:flex-start}
+  .ag,.pg{grid-template-columns:1fr;gap:3rem}
+  .pr,.phdr{grid-template-columns:2.5rem 1fr 2rem}
+  .pm{display:none}
+  footer{flex-direction:column;gap:.8rem;text-align:center;padding:1.4rem 1.5rem}
+}
+@media(max-width:600px){
+  .hn,.hni{font-size:clamp(3.5rem,18vw,7rem)}
+  .lch{font-size:clamp(1.8rem,7vw,3rem)}
+}
+  </style>
+</head>
+<body>
+
+<!-- Loader -->
+<div id="loader">
+  <canvas id="loader-bg"></canvas>
+  <div class="lchars" id="lchars"></div>
+  <div class="lbar"   id="lbar"></div>
+  <div class="llabel">Loading portfolio</div>
+  <div class="lctr"   id="lctr">0%</div>
+</div>
+
+<canvas id="bg"></canvas>
+<div id="cd"></div>
+<div id="cr"></div>
+
+<!-- Brand -->
+<a href="#hero" class="brand" id="brand">GV</a>
+
+<!-- Status pill -->
+<div class="status-pill" id="status-pill">
+  <div class="sdot"></div>Available for work
+</div>
+
+<!-- Floating Dock -->
+<div id="dock">
+  <a href="#projects" class="di" data-section="projects" data-tip="Work">Work</a>
+  <a href="#skills"   class="di" data-section="skills"   data-tip="Skills">Skills</a>
+  <a href="#personal" class="di" data-section="personal" data-tip="About">About</a>
+  <div class="dock-sep"></div>
+  <a href="#contact"  class="di" data-section="contact"  data-tip="Contact">Contact</a>
+</div>
+
+<!-- Smooth-scroll content -->
+<div id="sc">
+<main>
+
+<!-- Hero -->
+<section style="position:relative;z-index:2;min-height:100vh">
+  <div class="hscan" id="hscan"></div>
+  <div id="hero">
+    <div class="htop">
+      <span>EE · Embedded · Industrial IoT</span>
+      <span>Nürnberg, Germany</span>
+    </div>
+    <div class="hname-block" id="hnb">
+      <span class="hl"><span class="hn">Gokul</span></span>
+      <span class="hl"><span class="hni">Vemulapalli</span></span>
+    </div>
+    <div class="hbot glass glass-edge" id="hbot">
+      <p class="hdesc">M.Sc. Electrical Engineering candidate specialising in embedded firmware and hardware-software integration. Open to Working Student &amp; Thesis roles.</p>
+      <div class="hscr">
+        <div class="str"></div>
+        <span class="slbl">Scroll</span>
+      </div>
+      <div class="hlinks">
+        <a href="https://github.com/gokulv03" target="_blank" rel="noopener" class="btn btn-glass">GitHub ↗</a>
+        <a href="https://www.linkedin.com/in/gokul-vemulapalli" target="_blank" rel="noopener" class="btn btn-glass">LinkedIn ↗</a>
+        <a href="mailto:gokulv0331@gmail.com" class="btn btn-acc">Hire me</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- About -->
+<section class="sec" id="about">
+  <div class="eyebrow">
+    <span class="ei">01</span><span class="er"></span><span class="el">Profile</span>
+  </div>
+  <div class="sh"><span>A brief</span><span>introduction</span></div>
+  <div class="ag">
+    <div>
+      <div class="at">
+        <p><strong>Electrical Engineering student</strong> specialising in embedded firmware and hardware-software integration. I write register-level C for STM32 microcontrollers, design PLC control logic for industrial automation, and build Python simulation pipelines.</p>
+        <p>My work spans safety-critical academic research — including an electromagnetic rail launcher and a V2V visible light communication system — and independent simulation work bridging physical plant models with software.</p>
+        <p>Pursuing an M.Sc. at <strong>Deggendorf Institute of Technology</strong>, deepening expertise in real-time OS, DSP, and power electronics. Expected graduation: April 2026.</p>
+      </div>
+      <div class="sg">
+        <div class="sc2"><div class="sn">6+</div><div class="sl">Hardware projects</div></div>
+        <div class="sc2"><div class="sn">5+</div><div class="sl">Protocols mastered</div></div>
+        <div class="sc2"><div class="sn">50+</div><div class="sl">Firmware test cycles</div></div>
+        <div class="sc2"><div class="sn">B1→B2</div><div class="sl">German level</div></div>
+      </div>
+    </div>
+    <div>
+      <p style="font-family:var(--mono);font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--t3);margin-bottom:1.4rem">Education</p>
+      <div class="ec glass glass-edge">
+        <div class="ey">Current · Expected Apr 2026</div>
+        <div class="ed">M.Sc. Electrical and Information Technology</div>
+        <div class="es">Deggendorf Institute of Technology, Germany</div>
+        <div class="ef">Embedded Systems · DSP · Real-time OS · Power Electronics</div>
+      </div>
+      <div class="ec glass glass-edge">
+        <div class="ey">Jun 2023</div>
+        <div class="ed">B.E. Electronics and Communication Engineering</div>
+        <div class="es">Dayananda Sagar College, Bangalore, India</div>
+        <div class="ef">EMC · Embedded Systems · Microcontrollers · Communication Systems</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Projects -->
+<section class="sec" id="projects">
+  <div class="eyebrow">
+    <span class="ei">02</span><span class="er"></span><span class="el">Selected work</span>
+  </div>
+  <div class="sh"><span>Projects &amp;</span><span>research</span></div>
+  <div class="phdr">
+    <span class="phc">#</span><span class="phc">Project</span>
+    <span class="phc">Type</span><span class="phc"></span>
+  </div>
+
+  <a href="https://github.com/gokulv03/pid_digital_twin" target="_blank" rel="noopener" class="pr">
+    <div class="pfill"></div><span class="pi">01</span>
+    <div class="pb"><div class="pn">PID Digital Twin</div><div class="pd">Discrete-time PID controller on a thermodynamic plant model — SIL methodology, modular architecture, telemetry validation.</div><div class="ptgs"><span class="ptg">Python</span><span class="ptg">Discrete-Time PID</span><span class="ptg">SIL</span><span class="ptg">Matplotlib</span></div></div>
+    <div class="pm"><div class="pt">Independent</div><div class="py">2025</div></div>
+    <div class="pa">↗</div>
+  </a>
+
+  <a href="https://github.com/gokulv03/predictive_maintenance_pipeline" target="_blank" rel="noopener" class="pr">
+    <div class="pfill"></div><span class="pi">02</span>
+    <div class="pb"><div class="pn">Industrial IoT Predictive Maintenance</div><div class="pd">SIL simulation of a vibration sensor network with edge anomaly detection and automated post-mortem failure dashboards.</div><div class="ptgs"><span class="ptg">Python</span><span class="ptg">OOP</span><span class="ptg">Anomaly Detection</span><span class="ptg">Stochastic Sim</span></div></div>
+    <div class="pm"><div class="pt">Independent</div><div class="py">2025</div></div>
+    <div class="pa">↗</div>
+  </a>
+
+  <a href="https://github.com/gokulv03/scada_dashboard" target="_blank" rel="noopener" class="pr">
+    <div class="pfill"></div><span class="pi">03</span>
+    <div class="pb"><div class="pn">SCADA Dashboard</div><div class="pd">Python-based industrial monitoring dashboard for real-time process visualisation and SCADA system overview.</div><div class="ptgs"><span class="ptg">Python</span><span class="ptg">SCADA</span><span class="ptg">Data Visualisation</span></div></div>
+    <div class="pm"><div class="pt">Independent</div><div class="py">2025</div></div>
+    <div class="pa">↗</div>
+  </a>
+
+  <div class="pr pnl">
+    <div class="pfill"></div><span class="pi">04</span>
+    <div class="pb"><div class="pn">Electromagnetic Rail Launcher — Embedded Control</div><div class="pd">Safety-critical state machine (init→arm→fire→shutdown) for a high-current actuator, microsecond STM32 timer switching, validated 50+ cycles.</div><div class="ptgs"><span class="ptg">STM32</span><span class="ptg">C</span><span class="ptg">State Machine</span><span class="ptg">Hall-Effect</span><span class="ptg">EMI</span></div></div>
+    <div class="pm"><div class="pt">Academic</div><div class="py">2023</div></div>
+    <div class="pa"></div>
+  </div>
+
+  <div class="pr pnl">
+    <div class="pfill"></div><span class="pi">05</span>
+    <div class="pb"><div class="pn">V2V Communication — Visible Light</div><div class="pd">FIR/IIR filters achieving 95% detection accuracy. Manchester encoding in C on STM32, microsecond LED driver sync via PWM.</div><div class="ptgs"><span class="ptg">STM32</span><span class="ptg">Embedded C</span><span class="ptg">FIR/IIR</span><span class="ptg">Manchester Encoding</span></div></div>
+    <div class="pm"><div class="pt">Academic</div><div class="py">2023</div></div>
+    <div class="pa"></div>
+  </div>
+
+  <div class="pr pnl">
+    <div class="pfill"></div><span class="pi">06</span>
+    <div class="pb"><div class="pn">Automotive IoT Monitoring System</div><div class="pd">Telemetry firmware integrating 8 peripherals via UART/DMA on ESP8266. Custom TCP/IP protocol, fault-detection under 500 ms, validated −10 to 85 °C.</div><div class="ptgs"><span class="ptg">ESP8266</span><span class="ptg">C/C++</span><span class="ptg">UART/DMA</span><span class="ptg">TCP/IP</span></div></div>
+    <div class="pm"><div class="pt">Academic</div><div class="py">2022</div></div>
+    <div class="pa"></div>
+  </div>
+
+  <div class="pr pnl">
+    <div class="pfill"></div><span class="pi">07</span>
+    <div class="pb"><div class="pn">PLC Conveyor System — Industrial Automation</div><div class="pd">Sequencing, motor control, and safety interlocks per IEC 61131-3. WinCC HMI via Siemens TIA Portal — 12 timing faults resolved.</div><div class="ptgs"><span class="ptg">Siemens TIA Portal</span><span class="ptg">Structured Text</span><span class="ptg">WinCC</span><span class="ptg">IEC 61131-3</span></div></div>
+    <div class="pm"><div class="pt">Academic</div><div class="py">2024</div></div>
+    <div class="pa"></div>
+  </div>
+</section>
+
+<!-- Skills -->
+<section class="sec" id="skills">
+  <div class="eyebrow"><span class="ei">03</span><span class="er"></span><span class="el">Technical competencies</span></div>
+  <div class="sh"><span>Skills &amp;</span><span>toolset</span></div>
+  <div class="skg">
+    <div class="sgg"><div class="sgl">Embedded Software</div><div class="sgt-wrap"><span class="sgt">C / C++</span><span class="sgt">STM32</span><span class="sgt">Arduino</span><span class="sgt">Register-level</span><span class="sgt">Interrupt Handling</span><span class="sgt">DMA</span><span class="sgt">Timers</span></div></div>
+    <div class="sgg"><div class="sgl">Protocols</div><div class="sgt-wrap"><span class="sgt">CAN Bus</span><span class="sgt">UART</span><span class="sgt">SPI</span><span class="sgt">I2C</span><span class="sgt">TCP/IP</span><span class="sgt">Modbus</span></div></div>
+    <div class="sgg"><div class="sgl">Industrial Automation</div><div class="sgt-wrap"><span class="sgt">PLC (TIA Portal)</span><span class="sgt">SCADA (WinCC)</span><span class="sgt">IEC 61131-3</span><span class="sgt">Structured Text</span><span class="sgt">HMI</span></div></div>
+    <div class="sgg"><div class="sgl">Simulation & Analysis</div><div class="sgt-wrap"><span class="sgt">MATLAB/Simulink</span><span class="sgt">LTspice</span><span class="sgt">SPICE</span><span class="sgt">Python (NumPy, Pandas)</span><span class="sgt">SIL Methodology</span></div></div>
+    <div class="sgg"><div class="sgl">Dev Tools</div><div class="sgt-wrap"><span class="sgt">STM32CubeIDE</span><span class="sgt">VSCode</span><span class="sgt">Git</span><span class="sgt">JTAG / SWD</span><span class="sgt">Oscilloscope</span><span class="sgt">Doxygen</span></div></div>
+    <div class="sgg"><div class="sgl">Methods & Languages</div><div class="sgt-wrap"><span class="sgt">State Machine Design</span><span class="sgt">Unit Testing</span><span class="sgt">Agile</span><span class="sgt">English C2</span><span class="sgt">German B1→B2</span></div></div>
+  </div>
+</section>
+
+<!-- Personal -->
+<section class="sec" id="personal">
+  <div class="eyebrow"><span class="ei">04</span><span class="er"></span><span class="el">Beyond the circuit</span></div>
+  <div class="sh"><span>The person</span><span>behind the work</span></div>
+  <div class="pg">
+    <div class="pb2">
+      <p>I grew up in <strong>Bangalore</strong> — one of India's most engineering-dense cities — surrounded by manufacturing and software culture. Moving to <strong>Nürnberg, Germany</strong> sharpened both my technical depth and capacity to adapt.</p>
+      <p>Outside firmware and control systems, I am drawn to the quiet art of <strong>photography</strong>. I process images in Adobe Lightroom, preferring underexposed frames and desaturated tones — a similar patience to debugging an interrupt handler.</p>
+      <p>I keep a Notion workspace as a second brain: coursework notes, project logs, and the slow progress of my German vocabulary toward B2. What drives me is the conviction that the most consequential problems live at the seam between <strong>physics and software</strong>.</p>
+    </div>
+    <div class="il">
+      <div class="ir"><span class="ric">01</span><div><div class="rit">Photography</div><div class="rib">Architecture and industrial spaces. Post-processing in Adobe Lightroom — desaturated, matte, film-adjacent tones.</div></div></div>
+      <div class="ir"><span class="ric">02</span><div><div class="rit">Language Learning</div><div class="rib">Working German B1→B2. Daily life in Nürnberg is the most honest classroom available.</div></div></div>
+      <div class="ir"><span class="ric">03</span><div><div class="rit">Industrial History</div><div class="rib">How 19th-century mechanical systems became the ancestors of embedded control. Nürnberg's industrial heritage makes this tangible.</div></div></div>
+      <div class="ir"><span class="ric">04</span><div><div class="rit">Web as Creative Medium</div><div class="rib">Building small JS and React projects as a creative outlet — interfaces that are considered as well as functional.</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- Contact -->
+<section class="sec" id="contact">
+  <div class="eyebrow"><span class="ei">05</span><span class="er"></span><span class="el">Get in touch</span></div>
+  <div class="sh"><span>Let's build</span><span>something together</span></div>
+  <p class="cnote">Open to Working Student positions and thesis collaborations in embedded systems or industrial automation — starting as soon as possible.</p>
+  <a href="mailto:gokulv0331@gmail.com" class="cbig">gokulv0331@gmail.com</a>
+  <div class="crow">
+    <a href="https://github.com/gokulv03" target="_blank" rel="noopener" class="btn btn-glass">GitHub ↗</a>
+    <a href="https://www.linkedin.com/in/gokul-vemulapalli" target="_blank" rel="noopener" class="btn btn-glass">LinkedIn ↗</a>
+    <a href="tel:+4915510176813" class="btn btn-glass">+49 155 1017 6813</a>
+  </div>
+</section>
+
+</main>
+<footer>
+  <p>Gokul Vemulapalli · Nürnberg, Germany · 2026</p>
+  <a href="#hero" class="btt">↑ Top</a>
+  <p>M.Sc. EE · Available for Work</p>
+</footer>
+</div><!-- #sc -->
+
+<script>
+gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
+
+/* ═══════════════════════════════════════════
+   AURORA PLASMA BACKGROUND — WebGL
+   Domain-warped fluid · dark chromatic swirl
+   ═══════════════════════════════════════════ */
+(function(){
+  const cv = document.getElementById('bg');
+  const gl = cv.getContext('webgl',{antialias:false,alpha:false,powerPreference:'high-performance'})
+           || cv.getContext('experimental-webgl',{antialias:false,alpha:false});
+  if(!gl){cv.style.display='none';return;}
+
+  function mkP(vs,fs){
+    function mkS(t,s){const sh=gl.createShader(t);gl.shaderSource(sh,s);gl.compileShader(sh);return sh;}
+    const p=gl.createProgram();
+    gl.attachShader(p,mkS(gl.VERTEX_SHADER,vs));
+    gl.attachShader(p,mkS(gl.FRAGMENT_SHADER,fs));
+    gl.linkProgram(p);return p;
+  }
+
+  const QUAD_VS = `attribute vec2 a;void main(){gl_Position=vec4(a,0,1);}`;
+
+  /* ── Aurora plasma fragment shader ── */
+  const PLASMA_FS = `
+    precision highp float;
+    uniform float u_t; uniform vec2 u_r;
+
+    vec3 m3(vec3 x){return x-floor(x*(1./289.))*289.;}
+    vec4 m4(vec4 x){return x-floor(x*(1./289.))*289.;}
+    vec4 pm(vec4 x){return m4(((x*34.)+10.)*x);}
+    vec4 ti(vec4 r){return 1.79284291400159-0.85373472095314*r;}
+    float sn(vec3 v){
+      const vec2 C=vec2(1./6.,1./3.);const vec4 D=vec4(0.,.5,1.,2.);
+      vec3 i=floor(v+dot(v,C.yyy));vec3 x0=v-i+dot(i,C.xxx);
+      vec3 g=step(x0.yzx,x0.xyz);vec3 l=1.-g;
+      vec3 i1=min(g.xyz,l.zxy);vec3 i2=max(g.xyz,l.zxy);
+      vec3 x1=x0-i1+C.xxx;vec3 x2=x0-i2+C.yyy;vec3 x3=x0-D.yyy;
+      i=m3(i);
+      vec4 p=pm(pm(pm(i.z+vec4(0.,i1.z,i2.z,1.))+i.y+vec4(0.,i1.y,i2.y,1.))+i.x+vec4(0.,i1.x,i2.x,1.));
+      vec3 ns=0.142857142857*D.wyz-D.xzx;
+      vec4 j=p-49.*floor(p*ns.z*ns.z);
+      vec4 x_=floor(j*ns.z),y_=floor(j-7.*x_);
+      vec4 x=x_*ns.x+ns.yyyy,y=y_*ns.x+ns.yyyy,h=1.-abs(x)-abs(y);
+      vec4 b0=vec4(x.xy,y.xy),b1=vec4(x.zw,y.zw);
+      vec4 s0=floor(b0)*2.+1.,s1=floor(b1)*2.+1.,sh=-step(h,vec4(0.));
+      vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy,a1=b1.xzyw+s1.xzyw*sh.zzww;
+      vec3 p0=vec3(a0.xy,h.x),p1=vec3(a0.zw,h.y),p2=vec3(a1.xy,h.z),p3=vec3(a1.zw,h.w);
+      vec4 nm=ti(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));
+      p0*=nm.x;p1*=nm.y;p2*=nm.z;p3*=nm.w;
+      vec4 mm=max(.5-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.);
+      mm=mm*mm;
+      return 105.*dot(mm*mm,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));
+    }
+
+    void main(){
+      vec2 uv=gl_FragCoord.xy/u_r;
+      float asp=u_r.x/u_r.y;
+      vec2 p=vec2((uv.x-.5)*asp,(uv.y-.5));
+      float t=u_t*0.016;
+
+      /* domain warp pass 1 */
+      float q0=sn(vec3(p*1.1,        t));
+      float q1=sn(vec3(p*1.1+vec2(5.2,1.3), t*1.05));
+      vec2  q=vec2(q0,q1);
+
+      /* domain warp pass 2 */
+      float r0=sn(vec3(p*1.8+q*0.38, t*0.72));
+      float r1=sn(vec3(p*1.8+q*0.38+vec2(3.7,8.1), t*0.72+0.9));
+      vec2  r=vec2(r0,r1);
+
+      /* final scalar field */
+      float f=sn(vec3(p*2.2+r*0.45, t*0.55+1.6));
+      float v=f*0.5+0.5;
+
+      /* low-freq luminosity pulse */
+      float pulse=sn(vec3(p*0.5, t*0.3))*0.5+0.5;
+
+      /* colour nodes — all very dark */
+      vec3 base  =vec3(0.022,0.020,0.028);
+      vec3 amber =vec3(0.072,0.044,0.016); /* dark amber  */
+      vec3 teal  =vec3(0.016,0.055,0.050); /* dark teal   */
+      vec3 indigo=vec3(0.024,0.022,0.068); /* dark indigo */
+
+      vec3 col=base;
+      col=mix(col, amber,  v*pulse*0.55);
+      col=mix(col, teal,  (1.-v)*pulse*0.45);
+      col=mix(col, indigo,(0.5-abs(v-0.5))*2.*(1.-pulse)*0.40);
+
+      /* vignette */
+      float vig=length(uv-.5)*1.45;
+      col*=1.-vig*vig*0.55;
+
+      gl_FragColor=vec4(col,1.);
+    }
+  `;
+
+  /* ── Particle overlay ── */
+  const PT_VS = `
+    precision highp float;
+    attribute vec2 a_p; attribute float a_d,a_c,a_ph;
+    uniform float u_t; uniform vec2 u_r;
+    varying float va; varying vec3 vc;
+    void main(){
+      float asp=u_r.x/u_r.y; float t=u_t;
+      float p1=t*.078+a_ph, p2=t*.049+a_ph*1.414, p3=t*.028+a_ph*2.236;
+      vec2 dr=vec2(
+        sin(p1)*.012+cos(p2)*.006+sin(p3*1.618)*.003,
+        cos(p1*1.17)*.012+sin(p2*.83)*.006+cos(p3*1.3)*.003);
+      float rot=t*.003; float sr=sin(rot),cr=cos(rot);
+      vec2 hp=vec2(a_p.x*cr-a_p.y*sr, a_p.x*sr+a_p.y*cr)+dr;
+      gl_Position=vec4(hp.x/asp,hp.y,0.,1.);
+      gl_PointSize=mix(.5,2.5,a_d);
+      float r2=dot(a_p,a_p);
+      float tw=(a_c>.78&&a_c<.92)?(0.6+sin(t*1.4+a_ph*3.7)*.4):1.;
+      va=mix(.15,.88,a_d)*exp(-r2*2.8)*tw;
+      if(a_c<.50)      vc=vec3(1.,.972,.90);
+      else if(a_c<.78) vc=vec3(.93,.762,.38);
+      else if(a_c<.92) vc=vec3(1.,1.,1.);
+      else             vc=vec3(.82,.88,1.);
+    }
+  `;
+  const PT_FS = `
+    precision mediump float;
+    varying float va; varying vec3 vc;
+    void main(){
+      vec2 c=gl_PointCoord-.5; float d=length(c)*2.;
+      float a=pow(max(1.-d,0.),1.6);
+      gl_FragColor=vec4(vc,a*va*.75);
+    }
+  `;
+
+  const plasmaProg = mkP(QUAD_VS, PLASMA_FS);
+  const ptProg     = mkP(PT_VS,   PT_FS);
+
+  /* Quad VBO */
+  const qbuf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, qbuf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,1,-1,1,1,-1,1]), gl.STATIC_DRAW);
+
+  /* Particles — 10 000 */
+  const N=10000, S=5;
+  const pd = new Float32Array(N*S);
+  function bm(){const u=Math.max(1e-10,Math.random());return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*Math.random());}
+  for(let i=0;i<N;i++){
+    const r=Math.random(); let x,y;
+    if(r<.60){x=bm()*.32;y=bm()*.20;}
+    else if(r<.80){const a=Math.random()*Math.PI*2,rv=.30+Math.abs(bm())*.28;x=Math.cos(a)*rv;y=Math.sin(a)*rv*.55;}
+    else if(r<.92){const s=Math.random()<.5?1:-1;x=bm()*.48+s*.10;y=bm()*.12;}
+    else{x=(Math.random()-.5)*2.4;y=(Math.random()-.5)*1.9;}
+    pd[i*S+0]=Math.max(-1.4,Math.min(1.4,x));
+    pd[i*S+1]=Math.max(-1.2,Math.min(1.2,y));
+    pd[i*S+2]=Math.random(); pd[i*S+3]=Math.random();
+    pd[i*S+4]=Math.random()*Math.PI*20;
+  }
+  const ptbuf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, ptbuf);
+  gl.bufferData(gl.ARRAY_BUFFER, pd, gl.STATIC_DRAW);
+
+  /* Locations */
+  const pUt=gl.getUniformLocation(plasmaProg,'u_t'), pUr=gl.getUniformLocation(plasmaProg,'u_r'), pA=gl.getAttribLocation(plasmaProg,'a');
+  const ptUt=gl.getUniformLocation(ptProg,'u_t'),   ptUr=gl.getUniformLocation(ptProg,'u_r');
+  const aP=gl.getAttribLocation(ptProg,'a_p'), aD=gl.getAttribLocation(ptProg,'a_d'), aC=gl.getAttribLocation(ptProg,'a_c'), aPh=gl.getAttribLocation(ptProg,'a_ph');
+
+  const BPE=4;
+  function resize(){
+    const dpr=Math.min(devicePixelRatio||1,2);
+    cv.width=innerWidth*dpr; cv.height=innerHeight*dpr;
+    cv.style.width=innerWidth+'px'; cv.style.height=innerHeight+'px';
+    gl.viewport(0,0,cv.width,cv.height);
+  }
+  resize(); window.addEventListener('resize',resize,{passive:true});
+  gl.clearColor(0.022,0.020,0.028,1.0);
+
+  let t0=null;
+  (function frame(ts){
+    if(!t0)t0=ts;
+    const t=(ts-t0)*.001;
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    /* Pass 1 — plasma */
+    gl.disable(gl.BLEND);
+    gl.useProgram(plasmaProg);
+    gl.bindBuffer(gl.ARRAY_BUFFER,qbuf);
+    gl.enableVertexAttribArray(pA); gl.vertexAttribPointer(pA,2,gl.FLOAT,false,0,0);
+    gl.uniform1f(pUt,t); gl.uniform2f(pUr,cv.width,cv.height);
+    gl.drawArrays(gl.TRIANGLES,0,6);
+    gl.disableVertexAttribArray(pA);
+
+    /* Pass 2 — particles */
+    gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA,gl.ONE);
+    gl.useProgram(ptProg);
+    gl.bindBuffer(gl.ARRAY_BUFFER,ptbuf);
+    const stride=S*BPE;
+    gl.enableVertexAttribArray(aP);  gl.vertexAttribPointer(aP, 2,gl.FLOAT,false,stride,0);
+    gl.enableVertexAttribArray(aD);  gl.vertexAttribPointer(aD, 1,gl.FLOAT,false,stride,2*BPE);
+    gl.enableVertexAttribArray(aC);  gl.vertexAttribPointer(aC, 1,gl.FLOAT,false,stride,3*BPE);
+    gl.enableVertexAttribArray(aPh); gl.vertexAttribPointer(aPh,1,gl.FLOAT,false,stride,4*BPE);
+    gl.uniform1f(ptUt,t); gl.uniform2f(ptUr,cv.width,cv.height);
+    gl.drawArrays(gl.POINTS,0,N);
+
+    requestAnimationFrame(frame);
+  })();
+})();
+
+/* ═══════════════════════════════════
+   CURSOR
+   ═══════════════════════════════════ */
+(function(){
+  const dot=document.getElementById('cd'), ring=document.getElementById('cr');
+  let mx=innerWidth/2, my=innerHeight/2, rx=mx, ry=my;
+  window.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+  const lrp=(a,b,t)=>a+(b-a)*t;
+  (function loop(){
+    rx=lrp(rx,mx,.11); ry=lrp(ry,my,.11);
+    dot.style.left=mx+'px'; dot.style.top=my+'px';
+    ring.style.left=rx+'px'; ring.style.top=ry+'px';
+    requestAnimationFrame(loop);
+  })();
+  document.querySelectorAll('a,button').forEach(el=>{
+    el.addEventListener('mouseenter',()=>document.body.classList.add('cl'));
+    el.addEventListener('mouseleave',()=>document.body.classList.remove('cl'));
+  });
+  document.querySelectorAll('.pr,.ec,.sgg,.ir').forEach(el=>{
+    el.addEventListener('mouseenter',()=>document.body.classList.add('ch'));
+    el.addEventListener('mouseleave',()=>document.body.classList.remove('ch'));
+  });
+})();
+
+/* ═══════════════════════════════════
+   SMOOTH SCROLL
+   GSAP ticker lerp — no event interception
+   browser scrollbar + Mac momentum both work
+   ═══════════════════════════════════ */
+(function(){
+  if(window.matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  const sc=document.getElementById('sc');
+  let sy=0; /* smoothed scroll Y */
+
+  /* Lerp content in GSAP's own RAF — stays in sync with animations */
+  gsap.ticker.add(()=>{
+    sy+=(window.scrollY-sy)*0.115; /* 0.115 = snappy but silky */
+    const offset=window.scrollY-sy;
+    sc.style.transform=`translateY(${offset}px)`;
+  });
+
+  /* Smooth anchor navigation */
+  document.querySelectorAll('a[href^="#"]').forEach(a=>{
+    a.addEventListener('click',e=>{
+      const id=a.getAttribute('href').slice(1);
+      const el=document.getElementById(id);
+      if(!el) return;
+      e.preventDefault();
+      gsap.to(window,{scrollTo:{y:el.offsetTop-80,autoKill:false},duration:1.1,ease:'power3.inOut'});
+    });
+  });
+})();
+
+/* ═══════════════════════════════════════════
+   LOADER BACKGROUND — ShaderGradient waterPlane
+   Red animated water surface (color1=#ff1408,
+   color2=#200000, uStrength=3.4, uDensity=1.2)
+   ═══════════════════════════════════════════ */
+(function(){
+  const cv=document.getElementById('loader-bg');
+  if(!cv) return;
+  const gl=cv.getContext('webgl',{antialias:false,alpha:false,powerPreference:'high-performance'})
+          ||cv.getContext('experimental-webgl');
+  if(!gl){cv.style.display='none';return;}
+
+  function mkP(vs,fs){
+    function mkS(t,s){const sh=gl.createShader(t);gl.shaderSource(sh,s);gl.compileShader(sh);return sh;}
+    const p=gl.createProgram();
+    gl.attachShader(p,mkS(gl.VERTEX_SHADER,vs));
+    gl.attachShader(p,mkS(gl.FRAGMENT_SHADER,fs));
+    gl.linkProgram(p);return p;
+  }
+
+  const VS=`attribute vec2 a;void main(){gl_Position=vec4(a,0,1);}`;
+
+  const FS=`
+    precision highp float;
+    uniform float u_t;
+    uniform vec2  u_r;
+
+    /* gradient noise */
+    vec2 hash2(vec2 p){
+      p=vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3)));
+      return fract(sin(p)*43758.5453)*2.0-1.0;
+    }
+    float gnoise(vec2 p){
+      vec2 i=floor(p),f=fract(p),u=f*f*(3.0-2.0*f);
+      return mix(
+        mix(dot(hash2(i),f),           dot(hash2(i+vec2(1,0)),f-vec2(1,0)),u.x),
+        mix(dot(hash2(i+vec2(0,1)),f-vec2(0,1)),dot(hash2(i+vec2(1,1)),f-vec2(1,1)),u.x),
+        u.y);
+    }
+    float fbm(vec2 p,float spd){
+      float v=0.0,a=0.52;
+      vec2 sh=vec2(5.2,1.7);
+      for(int i=0;i<5;i++){
+        v+=a*gnoise(p);
+        p=p*2.05+sh; sh=sh.yx*1.4;
+        a*=0.48;
+      }
+      return v;
+    }
+
+    void main(){
+      vec2 uv=gl_FragCoord.xy/u_r;
+      float asp=u_r.x/u_r.y;
+      float t=u_t*0.1; /* uSpeed=0.1 */
+
+      /* perspective-project screen onto the water plane
+         camera: polar=70°→ ~20° above horizon, positionY=0.9 fills frame */
+      float depth=0.18+uv.y*0.82;           /* 0.18…1.0 bottom→top */
+      vec2 wp;
+      wp.x=(uv.x-0.5)*asp/depth*0.6;
+      wp.y=(1.0-uv.y)/depth*0.9-t*1.8;      /* scroll toward camera */
+
+      /* density=1.2 */
+      wp*=1.2;
+
+      /* domain-warp: strength=3.4 → warp scale ~0.55 */
+      float w0=fbm(wp,t);
+      float w1=fbm(wp+vec2(3.7,8.1),t*1.1);
+      vec2  warp=vec2(w0,w1)*3.4*0.16;
+
+      float waves=fbm(wp+warp+t*0.18,t);
+      float v=clamp(waves*0.5+0.5,0.0,1.0);
+      v=pow(v,0.75);
+
+      /* color1=#ff1408  color2=#200000  color3=#ff1408 */
+      vec3 c1=vec3(1.000,0.078,0.031);
+      vec3 c2=vec3(0.125,0.000,0.000);
+      vec3 col=mix(c2,c1,v);
+
+      /* reflection=0.1 → specular glints on crests */
+      float spec=pow(max(0.0,v-0.72),2.2)*0.32;
+      col+=spec;
+
+      /* brightness=1.2 */
+      col*=1.2;
+
+      /* depth-based darkening toward "horizon" (top of plane) */
+      float df=mix(0.25,1.0,depth);
+      col*=df;
+
+      /* edge vignette */
+      float vig=length((uv-0.5)*vec2(1.2,1.0));
+      col*=1.0-vig*vig*0.5;
+
+      col=clamp(col,0.0,1.0);
+      gl_FragColor=vec4(col,1.0);
+    }
+  `;
+
+  const prog=mkP(VS,FS);
+  const uT=gl.getUniformLocation(prog,'u_t');
+  const uR=gl.getUniformLocation(prog,'u_r');
+  const aA=gl.getAttribLocation(prog,'a');
+
+  const buf=gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,-1,1,1,-1,1]),gl.STATIC_DRAW);
+
+  function resize(){
+    const dpr=Math.min(devicePixelRatio||1,2);
+    cv.width=innerWidth*dpr; cv.height=innerHeight*dpr;
+    gl.viewport(0,0,cv.width,cv.height);
+  }
+  resize(); window.addEventListener('resize',resize,{passive:true});
+
+  let t0=null,raf=null,alive=true;
+  function frame(ts){
+    if(!alive)return;
+    if(!t0)t0=ts;
+    const t=(ts-t0)*.001;
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.useProgram(prog);
+    gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+    gl.enableVertexAttribArray(aA);
+    gl.vertexAttribPointer(aA,2,gl.FLOAT,false,0,0);
+    gl.uniform1f(uT,t);
+    gl.uniform2f(uR,cv.width,cv.height);
+    gl.drawArrays(gl.TRIANGLES,0,6);
+    raf=requestAnimationFrame(frame);
+  }
+  raf=requestAnimationFrame(frame);
+
+  /* stop rendering once loader exits */
+  document.addEventListener('loaderDone',()=>{alive=false;cancelAnimationFrame(raf);});
+})();
+
+/* ═══════════════════════════════════
+   GSAP — LOADER + SCROLL ANIMATIONS
+   ═══════════════════════════════════ */
+(function(){
+  /* Build loader chars */
+  const name='GOKUL VEMULAPALLI';
+  const row=document.getElementById('lchars');
+  [...name].forEach(ch=>{
+    const s=document.createElement('span');
+    s.className=ch===' '?'lch sp':'lch';
+    s.textContent=ch===' '?' ':ch;
+    row.appendChild(s);
+  });
+
+  /* Loader timeline */
+  const tl=gsap.timeline({
+    onComplete:()=>{
+      document.dispatchEvent(new Event('loaderDone'));
+      document.getElementById('loader').style.display='none';
+      heroIn();
+    }
+  });
+  tl
+    .to('.lch',{y:0,duration:.9,stagger:.034,ease:'power3.out'},0.15)
+    .to('#lbar',{
+      width:'100%',duration:1.3,ease:'power2.inOut',
+      onUpdate(){
+        const el=document.getElementById('lctr');
+        if(el) el.textContent=Math.round(this.progress()*100)+'%';
+      }
+    },0.2)
+    .to('.lch',{color:'rgba(255,255,255,0.04)',duration:.4,ease:'power2.in'},'+=0.12')
+    .to('#loader',{yPercent:-100,duration:.85,ease:'power3.inOut'},'+=0.08');
+
+  /* Hero entrance */
+  function heroIn(){
+    const tl2=gsap.timeline();
+    tl2
+      .to('#brand',{opacity:1,duration:.55,ease:'power2.out'},0)
+      .to('#status-pill',{opacity:1,duration:.55,ease:'power2.out'},0.1)
+      .to('#dock',{opacity:1,duration:.65,ease:'power2.out'},0.2)
+      .to('.htop span',{y:0,duration:.65,stagger:.08,ease:'power3.out'},0.05)
+      .to('.hn',  {y:0,duration:.95,ease:'power3.out'},0.08)
+      .to('.hni', {y:0,duration:.95,ease:'power3.out'},0.20)
+      .to('#hbot',{opacity:1,duration:.7,ease:'power2.out'},0.50)
+      .set('#hscan',{opacity:1,top:'25%'})
+      .to('#hscan',{top:'75%',opacity:0,duration:1.7,ease:'power1.inOut'},0.35);
+  }
+
+  /* Hero parallax */
+  gsap.to('#hnb',{yPercent:-16,ease:'none',scrollTrigger:{trigger:'#hero',start:'top top',end:'bottom top',scrub:1.0}});
+
+  /* ── Reusable scroll reveals ── */
+  /* Eyebrows */
+  document.querySelectorAll('.eyebrow').forEach(el=>{
+    const st={trigger:el,start:'top 90%',once:true};
+    gsap.to(el.querySelectorAll('.ei,.el'),{y:0,duration:.65,stagger:.05,ease:'power3.out',scrollTrigger:st});
+    gsap.to(el.querySelector('.er'),{scaleX:1,duration:.85,ease:'power3.out',scrollTrigger:st});
+  });
+
+  /* Section headings */
+  document.querySelectorAll('.sh').forEach(el=>{
+    gsap.to(el.querySelectorAll('span'),{y:0,duration:.9,stagger:.08,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 88%',once:true}});
+  });
+
+  /* About */
+  gsap.from('.at p',{y:18,opacity:0,duration:.75,stagger:.10,ease:'power2.out',scrollTrigger:{trigger:'.at',start:'top 85%',once:true}});
+  gsap.from('.sc2',{y:14,opacity:0,duration:.6,stagger:.06,ease:'power2.out',scrollTrigger:{trigger:'.sg',start:'top 88%',once:true}});
+  gsap.from('.ec', {y:18,opacity:0,duration:.65,stagger:.12,ease:'power2.out',scrollTrigger:{trigger:'.ec',start:'top 88%',once:true}});
+
+  /* Projects */
+  gsap.from('.phdr',{opacity:0,y:8,duration:.45,ease:'power2.out',scrollTrigger:{trigger:'.phdr',start:'top 90%',once:true}});
+  document.querySelectorAll('.pr').forEach((row,i)=>{
+    gsap.from(row,{opacity:0,x:-18,duration:.65,delay:i*.05,ease:'power3.out',scrollTrigger:{trigger:row,start:'top 91%',once:true}});
+  });
+
+  /* Skills */
+  gsap.from('.sgg',{opacity:0,y:16,duration:.6,stagger:.07,ease:'power2.out',scrollTrigger:{trigger:'.skg',start:'top 85%',once:true}});
+
+  /* Personal */
+  gsap.from('.pb2 p',{opacity:0,y:16,duration:.7,stagger:.09,ease:'power2.out',scrollTrigger:{trigger:'.pb2',start:'top 86%',once:true}});
+  gsap.from('.ir',{opacity:0,x:-14,duration:.6,stagger:.08,ease:'power3.out',scrollTrigger:{trigger:'.il',start:'top 87%',once:true}});
+
+  /* Contact */
+  gsap.from('.cbig,.cnote,.crow',{opacity:0,y:18,duration:.7,stagger:.10,ease:'power2.out',scrollTrigger:{trigger:'#contact',start:'top 85%',once:true}});
+
+  /* Active dock item */
+  ['projects','skills','personal','contact'].forEach(id=>{
+    const el=document.getElementById(id);
+    const a=document.querySelector(`.di[data-section="${id}"]`);
+    if(!el||!a) return;
+    ScrollTrigger.create({trigger:el,start:'top 44%',end:'bottom 44%',
+      onEnter:()=>{document.querySelectorAll('.di').forEach(x=>x.classList.remove('active'));a.classList.add('active');},
+      onLeaveBack:()=>a.classList.remove('active')
+    });
+  });
+
+  /* Dock magnification on mouse proximity */
+  (function(){
+    const dock=document.getElementById('dock');
+    const items=()=>[...dock.querySelectorAll('.di')];
+    dock.addEventListener('mousemove',e=>{
+      const cx=e.clientX;
+      items().forEach(item=>{
+        const r=item.getBoundingClientRect();
+        const mid=r.left+r.width/2;
+        const dist=Math.abs(cx-mid);
+        const maxD=110;
+        const s=dist<maxD?1+0.18*(1-dist/maxD):1;
+        if(!item.matches(':hover'))
+          item.style.transform=`scale(${s.toFixed(3)}) translateY(${dist<maxD?-2*(1-dist/maxD):0}px)`;
+      });
+    });
+    dock.addEventListener('mouseleave',()=>{
+      items().forEach(item=>{if(!item.matches(':hover'))item.style.transform=''});
+    });
+  })();
+})();
+</script>
+</body>
+</html>
