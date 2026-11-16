@@ -33,8 +33,9 @@ import { FullScreenQuad } from 'three/examples/jsm/postprocessing/Pass.js'
  * `createHalo`: the frame itself is drawn straight to the screen, and the glow
  * comes from a small blurred copy, which keeps it cheap), so lit copper
  * glows like phosphor; a sky dome puts an amber haze on the horizon, which the
- * far components stand against as silhouettes. If the frame rate sags, the
- * stage steps its own quality down (resolution first, then the bloom).
+ * far components stand against as silhouettes. If the frame rate drops below
+ * about 50 a second, the stage steps its own quality down (resolution first,
+ * then the bloom, then resolution again).
  *
  * Everything is procedural (seeded, so it is the same board on every visit).
  * Static geometry is merged into a handful of draw calls.
@@ -535,6 +536,9 @@ export function createWorld(canvas, { lite = false, bars = null } = {}) {
   const renderer = new WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' })
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, lite ? 1.5 : 1.75))
   renderer.setClearColor(BG, 1)
+  // which graphics chip the browser picked (shown by the ?fps readout)
+  const glInfo = renderer.getContext().getExtension('WEBGL_debug_renderer_info')
+  const gpu = glInfo ? String(renderer.getContext().getParameter(glInfo.UNMASKED_RENDERER_WEBGL)) : 'unknown graphics'
 
   const scene = new Scene()
   scene.background = new Color(BG)
@@ -960,7 +964,7 @@ export function createWorld(canvas, { lite = false, bars = null } = {}) {
   // quality governor: average frame time, checked every couple of seconds
   let frameAvg = 0.016
   let frames = 0
-  let level = 0 // 0 full, 1 lower resolution, 2 no bloom
+  let level = 0 // 0 full, 1 lower resolution, 2 no bloom, 3 lower resolution again
   let bloomOut = false
   let bloomFade = 1
 
@@ -1027,13 +1031,17 @@ export function createWorld(canvas, { lite = false, bars = null } = {}) {
 
     if (gap < 0.25 && time > 3) {
       frameAvg += (gap - frameAvg) * 0.04
-      if (++frames >= 150) {
+      if (++frames >= 90) {
         frames = 0
-        if (frameAvg > 0.03 && level < 2) {
+        // aim for a steady 50 or more frames a second, shedding one thing at
+        // a time: sharpness first, then the glow, then resolution again
+        const slow = frameAvg > (level < 2 ? 0.021 : 0.028)
+        if (slow && level < 3) {
           level += 1
           frameAvg = 0.016
-          if (level === 1) { renderer.setPixelRatio(1); resize() }
-          else bloomOut = true // fades over a second, then the pass is dropped
+          if (level === 1) { renderer.setPixelRatio(Math.min(renderer.getPixelRatio(), 1)); resize() }
+          else if (level === 2) bloomOut = true // fades over a second, then the pass is dropped
+          else { renderer.setPixelRatio(0.75); resize() }
         }
       }
     }
@@ -1094,7 +1102,7 @@ export function createWorld(canvas, { lite = false, bars = null } = {}) {
     // dev aid: where the camera is right now
     state: () => ({
       x: P.x, y: P.y, z: P.z, t: tCam, scroll: sSmooth, glow: shown, reveal: energy.uReveal.value,
-      a1: journey.a1, a5: journey.a5, end: journey.end, bloom: !!(halo && useBloom), level, frameMs: Math.round(frameAvg * 1000), tunnel: tunnel ? [tunnel.tA, tunnel.tB] : null,
+      a1: journey.a1, a5: journey.a5, end: journey.end, bloom: !!(halo && useBloom), level, gpu, frameMs: Math.round(frameAvg * 1000), tunnel: tunnel ? [tunnel.tA, tunnel.tB] : null,
     }),
     dispose() {
       running = false

@@ -14,6 +14,7 @@ import Projects          from './components/Projects.jsx'
 import Education         from './components/Education.jsx'
 import Contact           from './components/Contact.jsx'
 import Personal          from './components/Personal.jsx'
+import Perf, { perfOn }  from './components/Perf.jsx'
 
 /* Two pages, no router: the work (/) and the personal page (/personal). */
 const PATHS = { home: '/', personal: '/personal' }
@@ -118,6 +119,7 @@ export default function App() {
       )}
 
       <div className={`veil${veil ? ' is-on' : ''}`} aria-hidden="true" />
+      {perfOn && <Perf />}
     </MotionConfig>
   )
 }

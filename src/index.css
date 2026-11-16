@@ -1117,6 +1117,24 @@ html.is-booting { overflow: hidden; }
   .proj-stage.has-view { grid-template-columns: minmax(0, 1fr) clamp(320px, 32vw, 440px); }
 }
 
+/* ── Frame-rate readout, only with ?fps in the address (Perf.jsx) ── */
+.perf {
+  position: fixed;
+  right: 12px; bottom: 12px;
+  z-index: 9500;
+  margin: 0;
+  padding: 0.6rem 0.8rem;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: #e4ecee;
+  background: rgba(0, 0, 0, 0.82);
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius);
+  white-space: pre;
+  pointer-events: none;
+}
+
 /* ── Page change: a short fade through black between the two pages ── */
 .veil {
   position: fixed;

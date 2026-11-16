@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import ScrollTrigger from 'gsap/ScrollTrigger'
+import { perfOn } from './Perf.jsx'
 
 /**
  * World — the fixed 3D board behind the whole page (see src/three/world.js).
@@ -65,6 +66,7 @@ export default function World({ ready }) {
         })
         worldRef.current = world
         if (import.meta.env.DEV) window.__world = world
+        if (perfOn) window.__worldState = () => world.state()
         ScrollTrigger.addEventListener('refresh', measure)
         window.addEventListener('resize', measure)
         // this class opens the launch gap in the page, so everything below moves:
@@ -84,6 +86,7 @@ export default function World({ ready }) {
       document.documentElement.classList.remove('has-world')
       world?.dispose()
       worldRef.current = null
+      if (perfOn) window.__worldState = null
     }
   }, [skip])
 
