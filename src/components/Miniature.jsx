@@ -8,11 +8,14 @@ import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 're
  * A parent can hand in scroll progress through the ref (`setProgress(0..1)`)
  * to turn the model and, where the model supports it, take it apart.
  *
+ * `accent` recolours the live parts (the personal page uses blue) and
+ * `threshold` sets how bright a part must be to glow.
+ *
  * `preload` lists other kinds this slot will switch to, so they can be built
  * ahead of time and the first swap does not hitch.
  */
 const Miniature = forwardRef(function Miniature(
-  { kind, label, paused = false, fill, preload, className = '' },
+  { kind, label, paused = false, fill, preload, accent, threshold, className = '' },
   ref
 ) {
   const canvasRef = useRef(null)
@@ -36,7 +39,7 @@ const Miniature = forwardRef(function Miniature(
     import('../three/stage.js')
       .then(({ createStage }) => {
         if (cancelled || !canvasRef.current) return
-        const stage = createStage(canvasRef.current, { kind: kindRef.current, reduce, fill })
+        const stage = createStage(canvasRef.current, { kind: kindRef.current, reduce, fill, accent, threshold })
         stage.setPaused(pausedRef.current)
         stage.setProgress(progressRef.current)
         if (preload) stage.preload(preload)

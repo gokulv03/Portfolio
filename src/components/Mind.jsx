@@ -174,8 +174,8 @@ const Mind = forwardRef(function Mind({ hubs = 6 }, ref) {
       // beside the text on wide screens; behind it, dimmer, on narrow ones
       const wide = w >= 881
       const cx = wide ? w * 0.7 : w * 0.5
-      const cy = wide ? h * 0.5 : h * 0.42
-      const scale = wide ? Math.min(w * 0.26, h * 0.4) : Math.min(w * 0.52, h * 0.3)
+      const cy = wide ? h * 0.5 : h * 0.3
+      const scale = wide ? Math.min(w * 0.265, h * 0.48) : Math.min(w * 0.62, h * 0.34)
       const dim = wide ? 1 : 0.55
 
       const turn = time * 0.07 + pxS * 0.5

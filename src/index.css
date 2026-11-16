@@ -1221,6 +1221,28 @@ html.is-personal body { background: #000; }
   color: var(--t3);
 }
 
+/* the model for the current moment, held at the centre of the network */
+.pj-stage {
+  position: fixed !important;
+  left: 70vw; top: 50vh;
+  width: min(33vw, 60vh);
+  aspect-ratio: 1 / 0.9;
+  transform: translate(-50%, -50%) scale(0.92);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.7s ease, transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.pj-stage.is-on { opacity: 1; transform: translate(-50%, -50%); pointer-events: auto; }
+.pj-stage-hint {
+  position: absolute;
+  left: 0; right: 0; bottom: -1.4rem;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--t3);
+}
 .pj-list { list-style: none; }
 /* one moment at a time: the one crossing the middle of the screen is in focus */
 .pj-moment {
@@ -1273,10 +1295,14 @@ html.is-personal body { background: #000; }
 @media (max-width: 880px) {
   /* the network sits behind the copy here, so give the words a pool of black */
   .pj-moment, .pj-head, .pj-end { max-width: none; }
+  /* model in the upper part of the screen, the words below it */
+  .pj-stage { left: 50vw; top: 27vh; width: min(84vw, 40vh); }
+  .pj-stage-hint { display: none; }
+  .pj-moment { min-height: 100vh; justify-content: flex-end; padding-bottom: 16vh; }
   .pj-moment::before {
     content: '';
     position: absolute;
-    inset: 18% -1rem;
+    inset: 46% -1rem 6%;
     z-index: -1;
     background: radial-gradient(closest-side, rgba(0, 0, 0, 0.8), transparent);
     pointer-events: none;

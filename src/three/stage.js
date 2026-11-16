@@ -14,7 +14,9 @@ import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js'
  * back edges, 1px edge lines on top, amber for the live parts. No model files,
  * no lights. Loaded lazily, so three.js never blocks first paint.
  */
-const AMBER = 0xffb020
+// the colour of the live parts. Amber, unless a stage asks for another accent
+// (the personal page is blue); it is set just before each model is built.
+let AMBER = 0xffb020
 const COOL = 0x93a7ab
 
 /* ── per-stage material / geometry kit (so one dispose() frees everything) ── */
@@ -363,14 +365,164 @@ function buildBuck(k) {
   }
 }
 
-const BUILDERS = { mcu: buildMcu, buck: buildBuck, rail: buildRail, v2v: buildV2V, iot: buildIot }
+/* ── Personal page models (drawn in that page's blue; see `accent`) ── */
+const chain = (path) => path.slice(0, -1).flatMap((a, i) => [...a, ...path[i + 1]])
+
+/* a heart monitor: the plan that came first */
+function buildMedic(k) {
+  const g = new Group()
+  const cool = k.line(COOL, 0.8)
+  const dim = k.line(COOL, 0.34)
+  const live = k.line(AMBER, 1)
+
+  place(g, k.part(new BoxGeometry(2.7, 1.6, 0.12), cool), 0, 0.25, 0)
+  place(g, k.part(new BoxGeometry(0.12, 0.34, 0.12), dim), 0, -0.72, 0)
+  place(g, k.part(new BoxGeometry(0.9, 0.06, 0.6), dim), 0, -0.92, 0)
+
+  const z = 0.07
+  const trace = [
+    [-1.15, 0.25, z], [-0.75, 0.25, z], [-0.64, 0.37, z], [-0.53, 0.25, z], [-0.4, 0.25, z],
+    [-0.31, 0.1, z], [-0.2, 0.84, z], [-0.09, -0.16, z], [0, 0.25, z], [0.26, 0.25, z],
+    [0.4, 0.42, z], [0.54, 0.25, z], [1.15, 0.25, z],
+  ]
+  g.add(k.lines(chain(trace), live))
+  const dot = place(g, k.mesh(new SphereGeometry(0.05, 10, 8), k.solid(AMBER, 1)))
+
+  // the medical cross, standing beside it
+  const cross = new Group()
+  place(cross, k.part(new BoxGeometry(0.62, 0.2, 0.12), live))
+  place(cross, k.part(new BoxGeometry(0.2, 0.62, 0.12), live))
+  place(g, cross, 1.85, 0.25, 0.25)
+
+  g.scale.setScalar(0.8)
+  g.position.x = -0.2
+  return {
+    group: g,
+    update(t) {
+      along(trace, (t * 0.42) % 1, dot.position)
+      cross.rotation.y = t * 0.6
+    },
+  }
+}
+
+/* a volleyball going over the net, and a pencil for the sketchbooks */
+function buildVolley(k) {
+  const g = new Group()
+  const cool = k.line(COOL, 0.8)
+  const dim = k.line(COOL, 0.3)
+  const live = k.line(AMBER, 1)
+
+  place(g, k.part(new BoxGeometry(3.4, 0.05, 2.4), dim), 0, -0.7, 0)
+  for (const x of [-1.5, 1.5]) place(g, k.part(new BoxGeometry(0.07, 1.5, 0.07), cool), x, 0.05, 0)
+  const net = []
+  for (let x = -1.5; x <= 1.501; x += 0.25) net.push(x, 0.15, 0, x, 0.75, 0)
+  for (let y = 0.15; y <= 0.751; y += 0.2) net.push(-1.5, y, 0, 1.5, y, 0)
+  g.add(k.lines(net, dim))
+  g.add(k.lines([-1.5, 0.78, 0, 1.5, 0.78, 0], live))
+
+  const ball = place(g, k.part(new SphereGeometry(0.34, 10, 7), live, 1))
+
+  const pencil = new Group()
+  const body = place(pencil, k.part(new CylinderGeometry(0.055, 0.055, 1.1, 6), cool))
+  body.rotation.z = Math.PI / 2
+  const tip = place(pencil, k.part(new CylinderGeometry(0.001, 0.055, 0.18, 6), live), 0.64, 0, 0)
+  tip.rotation.z = -Math.PI / 2
+  pencil.rotation.y = 0.5
+  place(g, pencil, 0.75, -0.62, 0.85)
+
+  g.scale.setScalar(0.86)
+  return {
+    group: g,
+    update(t) {
+      const u = (t * 0.45) % 2
+      const go = u < 1 ? u : 2 - u
+      ball.position.set(0.15, 0.2 + 1.3 * Math.sin(Math.PI * go), -1 + 2 * go)
+      ball.rotation.set(t * 1.4, t * 0.9, 0)
+    },
+  }
+}
+
+/* a graduation cap on a stack of books: the degree that did not excite at first */
+function buildCampus(k) {
+  const g = new Group()
+  const cool = k.line(COOL, 0.8)
+  const dim = k.line(COOL, 0.34)
+  const live = k.line(AMBER, 1)
+
+  const books = [[1.7, 0.2, 1.2, 0.06], [1.5, 0.18, 1.1, -0.1], [1.6, 0.2, 1.15, 0.12]]
+  let y = -0.75
+  for (const [w, h, d, turn] of books) {
+    const b = place(g, k.part(new BoxGeometry(w, h, d), dim), 0, y + h / 2, 0)
+    b.rotation.y = turn
+    y += h
+  }
+  const cap = new Group()
+  place(cap, k.part(new CylinderGeometry(0.5, 0.56, 0.36, 18), cool), 0, 0.18, 0)
+  const board = place(cap, k.part(new BoxGeometry(1.5, 0.05, 1.5), live), 0, 0.4, 0)
+  board.rotation.y = Math.PI / 4
+  const tassel = new Group()
+  tassel.add(k.lines([0, 0, 0, 0, -0.5, 0], live))
+  place(tassel, k.part(new BoxGeometry(0.07, 0.2, 0.07), live), 0, -0.6, 0)
+  place(cap, tassel, 0.62, 0.42, 0.62)
+  place(g, cap, 0, y, 0)
+
+  g.scale.setScalar(0.95)
+  return {
+    group: g,
+    update(t) { tassel.rotation.z = Math.sin(t * 1.3) * 0.22 },
+  }
+}
+
+/* five linked points; three of them lit (the three now in Germany) */
+function buildFive(k) {
+  const g = new Group()
+  const dim = k.line(COOL, 0.3)
+  const cool = k.line(COOL, 0.8)
+  const live = k.line(AMBER, 1)
+
+  const at = []
+  for (let i = 0; i < 5; i++) {
+    const a = (i / 5) * Math.PI * 2 + Math.PI / 2
+    at.push([Math.cos(a) * 1.2, Math.sin(a) * 1.2, 0])
+  }
+  const lit = [0, 1, 4]
+  const all = [], bright = []
+  for (let i = 0; i < 5; i++) for (let j = i + 1; j < 5; j++) {
+    (lit.includes(i) && lit.includes(j) ? bright : all).push(...at[i], ...at[j])
+  }
+  g.add(k.lines(all, dim))
+  const bond = k.line(AMBER, 0.8)
+  g.add(k.lines(bright, bond))
+  const orbs = at.map((p, i) => {
+    const on = lit.includes(i)
+    const orb = place(g, k.part(new SphereGeometry(on ? 0.2 : 0.16, 10, 7), on ? live : cool, 1), ...p)
+    return orb
+  })
+
+  g.rotation.x = -0.35
+  g.scale.setScalar(0.95)
+  return {
+    group: g,
+    update(t) {
+      bond.opacity = 0.55 + 0.4 * Math.sin(t * 1.6)
+      orbs.forEach((o, i) => o.scale.setScalar(1 + 0.08 * Math.sin(t * 1.6 + i)))
+    },
+  }
+}
+
+const BUILDERS = {
+  mcu: buildMcu, buck: buildBuck, rail: buildRail, v2v: buildV2V, iot: buildIot,
+  medic: buildMedic, volley: buildVolley, campus: buildCampus, five: buildFive,
+}
 
 /**
  * createStage — owns one canvas: renderer, camera, the current miniature,
  * drag-to-rotate, and a render loop that only runs while the canvas is on
  * screen, the tab is visible and motion is allowed.
  */
-export function createStage(canvas, { kind = 'mcu', reduce = false, fill = 0x070a0c } = {}) {
+export function createStage(canvas, {
+  kind = 'mcu', reduce = false, fill = 0x070a0c, accent = 0xffb020, threshold = 0.4,
+} = {}) {
   const renderer = new WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' })
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
   renderer.setClearColor(0x000000, 0)
@@ -388,7 +540,7 @@ export function createStage(canvas, { kind = 'mcu', reduce = false, fill = 0x070
   const rt = new WebGLRenderTarget(Math.max(buf.x, 2), Math.max(buf.y, 2), { type: HalfFloatType, samples: 4 })
   const composer = new EffectComposer(renderer, rt)
   composer.addPass(new RenderPass(scene, camera))
-  const bloom = new UnrealBloomPass(new Vector2(buf.x, buf.y), 0.62, 0.45, 0.4)
+  const bloom = new UnrealBloomPass(new Vector2(buf.x, buf.y), 0.62, 0.45, threshold)
   composer.addPass(bloom)
   composer.addPass(new OutputPass())
 
@@ -398,6 +550,7 @@ export function createStage(canvas, { kind = 'mcu', reduce = false, fill = 0x070
     let entry = built.get(name)
     if (!entry) {
       const kit = makeKit(fill)
+      AMBER = accent
       entry = { kit, model: (BUILDERS[name] || buildMcu)(kit) }
       built.set(name, entry)
     }
